@@ -45,24 +45,34 @@ enum PaymentStatus {
 }
 
 model User {
-  id           Int       @id @default(autoincrement())
-  full_name    String?
-  email        String    @unique @default("")
-  phone_number String    @unique @default("")
-  password     String    @default("")
-  is_active    Boolean   @default(true)
-  role         Int       @default(1)
-  create_at    DateTime  @default(now())
-  update_at    DateTime  @default(now()) @updatedAt
-  blogs        Blog[]
-  comments     Comment[]
-  students     Student[]
-  teachers     Teacher[]
-  staffs       Staff[]
-  histories    History[]
+  id            Int            @id @default(autoincrement())
+  full_name     String?
+  email         String         @unique @default("")
+  phone_number  String         @unique @default("")
+  password      String         @default("")
+  is_active     Boolean        @default(true)
+  role          Int            @default(1)
+  create_at     DateTime       @default(now())
+  update_at     DateTime       @default(now()) @updatedAt
+  blogs         Blog[]
+  comments      Comment[]
+  students      Student[]
+  teachers      Teacher[]
+  staffs        Staff[]
+  histories     History[]
+  refreshTokens RefreshToken[]
 
   @@index([email])
   @@map("users")
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  isRevoked Boolean  @default(false)
+  createdAt DateTime @default(now())
 }
 
 model Subject {

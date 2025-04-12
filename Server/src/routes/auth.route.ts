@@ -13,5 +13,6 @@ router.post(
 );
 
 router.post("/login", validateLogin, handleValidation, AuthController.login);
+router.post("/refresh-token", AuthController.refreshToken);
 
 export default router;
