@@ -1,172 +1,140 @@
-// import { PrismaClient } from "@prisma/client";
-// import { Request, Response } from "express";
+import { PrismaClient } from "@prisma/client";
+import { Request, Response } from "express";
 
-// const prisma = new PrismaClient();
+const prisma = new PrismaClient();
 
-// interface PartType {
-//   name: string;
-//   subject_id: number;
-// }
+interface PartType {
+  name: string;
+  exam_id: number;
+  order: number;
+}
 
-// export const PartController = {
-//   get: async (req: Request, res: Response): Promise<any> => {
-//     try {
-//       const parts = await prisma.part.findMany({
-//         where: {
-//           deleted_at: null,
-//         },
-//       });
+export const PartController = {
+  get: async (req: Request, res: Response): Promise<any> => {
+    try {
+      const parts = await prisma.part.findMany({
+        where: {
+          deleted_at: null,
+        },
+      });
 
-//       if (parts.length === 0) {
-//         return res.status(200).json({
-//           message: "Không có dữ liệu",
-//         });
-//       }
+      if (parts.length === 0) {
+        return res.status(200).json({
+          message: "Không có dữ liệu",
+        });
+      }
 
-//       return res.status(200).json(parts);
-//     } catch (err: any) {
-//       return res.status(500).json({
-//         error: err.message,
-//       });
-//     }
-//   },
+      return res.status(200).json(parts);
+    } catch (err: any) {
+      return res.status(500).json({
+        error: err.message,
+      });
+    }
+  },
 
-//   getByID: async (req: Request, res: Response): Promise<any> => {},
+  getByID: async (req: Request, res: Response): Promise<any> => {},
 
-//   create: async (
-//     req: Request<{}, {}, PartType>,
-//     res: Response
-//   ): Promise<any> => {
-//     try {
-//       const { name, subject_id } = req.body;
+  create: async (
+    req: Request<{}, {}, PartType>,
+    res: Response
+  ): Promise<any> => {
+    try {
+      const { name, exam_id, order } = req.body;
 
-//       if (!name) {
-//         return res.status(422).json({ error: "Name is required!" });
-//       }
+      if (!name) {
+        return res.status(422).json({ error: "Name is required!" });
+      }
 
-//       const existing = await prisma.part.findUnique({
-//         where: { name },
-//       });
+      if (!exam_id) {
+        return res.status(422).json({ error: "Exam is required!" });
+      }
+      const existing = await prisma.part.findFirst({
+        where: { name: name },
+      });
 
-//       if (existing && !existing.deleted_at) {
-//         return res.status(409).json({
-//           error: `${name} already exists!`,
-//         });
-//       }
+      if (existing && !existing.deleted_at) {
+        return res.status(409).json({
+          error: `${name} already exists!`,
+        });
+      }
 
-//       if (!subject_id) {
-//         return res.status(422).json({
-//           error: "Subject id is required!",
-//         });
-//       } else {
-//         if (!(await prisma.subject.findUnique({ where: { id: subject_id } }))) {
-//           return res.status(404).json({
-//             error: "Subject not found!",
-//           });
-//         }
-//       }
+      const newPart = await prisma.part.create({
+        data: req.body,
+      });
 
-//       const newExam = await prisma.exam.create({
-//         data: req.body,
-//       });
+      return res.status(201).json({
+        message: "Add part successfully",
+        part: newPart,
+      });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  },
 
-//       return res.status(201).json(newExam);
-//     } catch (err: any) {
-//       return res.status(500).json({ error: err.message });
-//     }
-//   },
+  update: async (req: Request, res: Response): Promise<any> => {
+    try {
+      const { name, exam_id } = req.body;
 
-//   update: async (req: Request, res: Response): Promise<any> => {
-//     try {
-//       const examId = Number(req.params.id);
-//       const { name, subject_id } = req.body;
+      if (!name) {
+        return res.status(422).json({ error: "Name is required!" });
+      }
 
-//       if (!name) {
-//         return res.status(422).json({ error: "Name is required!" });
-//       }
+      const examExisting = await prisma.exam.findUnique({
+        where: { id: exam_id },
+      });
 
-//       const exam = await prisma.exam.findUnique({ where: { id: examId } });
+      if (!examExisting) {
+        return res.status(404).json({
+          error: "Exam not found!",
+        });
+      }
 
-//       if (!exam || exam.deleted_at) {
-//         return res.status(404).json({ error: "Exam not found!" });
-//       }
+      const updatedPart = await prisma.part.update({
+        where: { id: exam_id },
+        data: {
+          name,
+          exam_id,
+        },
+      });
 
-//       const existingByName = await prisma.exam.findFirst({
-//         where: {
-//           name,
-//           NOT: { id: examId },
-//           deleted_at: null,
-//         },
-//       });
+      return res.status(200).json(updatedPart);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  },
 
-//       if (existingByName) {
-//         return res.status(409).json({
-//           error: `${name} already exists!`,
-//         });
-//       }
+  delete: async (req: Request, res: Response): Promise<any> => {
+    try {
+      const partId = parseInt(req.params.id);
+      if (isNaN(partId)) {
+        return res.status(400).json({ error: "Invalid part ID" });
+      }
 
-//       if (!subject_id) {
-//         return res.status(422).json({
-//           error: "Subject id is required!",
-//         });
-//       }
+      const part = await prisma.part.findUnique({
+        where: { id: partId },
+      });
 
-//       const subjectExists = await prisma.subject.findUnique({
-//         where: { id: subject_id },
-//       });
+      if (!part) {
+        return res.status(404).json({ error: "Part not found!" });
+      }
 
-//       if (!subjectExists) {
-//         return res.status(404).json({
-//           error: "Subject not found!",
-//         });
-//       }
+      if (part.deleted_at) {
+        return res.status(410).json({ error: "Part already deleted!" });
+      }
 
-//       const updatedExam = await prisma.exam.update({
-//         where: { id: examId },
-//         data: {
-//           name,
-//           subject_id,
-//         },
-//       });
+      const deletedPart = await prisma.part.update({
+        where: { id: part.id },
+        data: { deleted_at: new Date() },
+      });
 
-//       return res.status(200).json(updatedExam);
-//     } catch (err: any) {
-//       return res.status(500).json({ error: err.message });
-//     }
-//   },
-
-//   delete: async (req: Request, res: Response): Promise<any> => {
-//     try {
-//       const examId = parseInt(req.params.id);
-//       if (isNaN(examId)) {
-//         return res.status(400).json({ error: "Invalid subject ID" });
-//       }
-
-//       const exam = await prisma.exam.findUnique({
-//         where: { id: examId },
-//       });
-
-//       if (!exam) {
-//         return res.status(404).json({ error: "Exam not found!" });
-//       }
-
-//       if (exam.deleted_at) {
-//         return res.status(410).json({ error: "Exam already deleted!" });
-//       }
-
-//       const deletedSubject = await prisma.exam.update({
-//         where: { id: examId },
-//         data: { deleted_at: new Date() },
-//       });
-
-//       return res.status(200).json({
-//         message: "Exam was deleted!",
-//         data: deletedSubject,
-//       });
-//     } catch (err: any) {
-//       return res.status(500).json({
-//         error: err.message,
-//       });
-//     }
-//   },
-// };
+      return res.status(200).json({
+        message: "Part was deleted!",
+        data: deletedPart,
+      });
+    } catch (err: any) {
+      return res.status(500).json({
+        error: err.message,
+      });
+    }
+  },
+};

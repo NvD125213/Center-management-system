@@ -45,15 +45,15 @@ enum PaymentStatus {
 }
 
 model User {
-  id            Int            @id @default(autoincrement())
+  id            Int             @id @default(autoincrement())
   full_name     String?
-  email         String         @unique @default("")
-  phone_number  String         @unique @default("")
-  password      String         @default("")
-  is_active     Boolean        @default(true)
-  role          Int            @default(1)
-  create_at     DateTime       @default(now())
-  update_at     DateTime       @default(now()) @updatedAt
+  email         String          @unique @default("")
+  phone_number  String          @unique @default("")
+  password      String          @default("")
+  is_active     Boolean         @default(true)
+  role          Int             @default(1)
+  create_at     DateTime        @default(now())
+  update_at     DateTime        @default(now()) @updatedAt
   blogs         Blog[]
   comments      Comment[]
   students      Student[]
@@ -61,6 +61,7 @@ model User {
   staffs        Staff[]
   histories     History[]
   refreshTokens RefreshToken[]
+  UserVerifyOtp UserVerifyOtp[]
 
   @@index([email])
   @@map("users")
@@ -73,6 +74,15 @@ model RefreshToken {
   user      User     @relation(fields: [userId], references: [id])
   isRevoked Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+model UserVerifyOtp {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  otp       String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  expiredAt DateTime
 }
 
 model Subject {
@@ -104,7 +114,7 @@ model Exam {
 model Part {
   id              Int             @id @default(autoincrement())
   exam            Exam            @relation(fields: [exam_id], references: [id])
-  exam_id         Int             @unique
+  exam_id         Int
   name            String
   order           Int
   create_at       DateTime        @default(now())

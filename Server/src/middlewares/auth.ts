@@ -2,8 +2,15 @@ import { PrismaClient } from "@prisma/client";
 import { Request, Response, NextFunction, RequestHandler } from "express";
 import jwt from "jsonwebtoken";
 import { UserType } from "../Types/userType";
+import { sendOTP } from "../libs/mailer";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
+
+interface EmailOtpType {
+  email: string;
+  id: number;
+}
 
 export const ensureAuthenticated = (
   req: Request<{}, {}, UserType>,
@@ -18,16 +25,20 @@ export const ensureAuthenticated = (
   }
 
   const accessToken = authHeader.split(" ")[1];
-  const secret = process.env.ACCESS_TOKEN_PRIVATE_KEY;
-
-  if (!secret) {
-    res.status(500).json({ message: "Token secret not configured" });
-    return;
-  }
 
   try {
-    const decoded = jwt.verify(accessToken, secret);
-    (req as any).user = decoded;
+    const decodedAccessToken = jwt.verify(
+      accessToken,
+      process.env.ACCESS_TOKEN_PRIVATE_KEY!
+    ) as jwt.JwtPayload;
+
+    (req as any).accessToken = {
+      value: accessToken,
+      exp: decodedAccessToken.exp,
+    };
+
+    (req as any).user = decodedAccessToken;
+
     next();
   } catch (err: any) {
     if (err instanceof jwt.TokenExpiredError) {
@@ -66,3 +77,40 @@ export function authorize(roles: number[]): RequestHandler {
     }
   };
 }
+
+export const sendEmailOTP = async (
+  { email, id }: EmailOtpType,
+  res: Response
+): Promise<any> => {
+  try {
+    const otp = `${Math.floor(1000 + Math.random() * 9000)}`;
+
+    await sendOTP(email, otp);
+
+    const saltRound = 10;
+    const hashOtp = await bcrypt.hash(otp, saltRound);
+
+    // Xoá OTP cũ nếu có
+    await prisma.userVerifyOtp.deleteMany({ where: { userId: id } });
+
+    const userVerify = await prisma.userVerifyOtp.create({
+      data: {
+        userId: id,
+        otp: hashOtp,
+        expiredAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes
+      },
+    });
+
+    return res.status(202).json({
+      status: "PENDING",
+      message: "Verify otp email sent",
+      data: { id: userVerify.userId, expiredAt: userVerify.expiredAt },
+    });
+  } catch (err: any) {
+    console.error("verifyOtp error:", err);
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: err.message,
+    });
+  }
+};

@@ -1,24 +1,17 @@
 import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
+import { AuthType, LoginType } from "../Types/authType";
+import { UserType } from "../Types/userType";
+import { sendEmailOTP } from "../middlewares/auth";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-
 const prisma = new PrismaClient();
 
-interface LoginType {
-  accessToken: string;
-  refreshToken: string;
+export interface LogoutRequest extends Request {
+  user?: UserType;
 }
 
-interface AuthType {
-  full_name: string;
-  email: string;
-  phone_number: string;
-  password: string;
-  role: number;
-  create_at: Date;
-  update_at: Date;
-}
+const tokenBlacklist = new Set();
 
 export const AuthController = {
   register: async (
@@ -66,54 +59,37 @@ export const AuthController = {
     const { email, password } = req.body;
 
     const user = await prisma.user.findUnique({
-      where: {
-        email,
-      },
+      where: { email },
     });
 
     if (!user) {
-      return res.status(401).json({
-        message: "Email or password is invalid",
-      });
+      return res.status(401).json({ message: "Email or password is invalid" });
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
-      return res.status(401).json({
-        message: "Email or password is invalid",
-      });
+      return res.status(401).json({ message: "Email or password is invalid" });
     }
 
-    // 🔥 Xóa refresh token cũ trước khi tạo mới
+    if (user.role === 1 || user.role === 2) {
+      await sendEmailOTP({ email, id: user.id }, res);
+    }
+
+    // Xóa refresh token cũ trước khi tạo mới
     await prisma.refreshToken.deleteMany({
-      where: {
-        userId: user.id,
-      },
+      where: { userId: user.id },
     });
 
-    // Tạo access & refresh token mới
     const accessToken = jwt.sign(
-      {
-        id: user.id,
-        role: user.role,
-      },
+      { id: user.id, role: user.role },
       process.env.ACCESS_TOKEN_PRIVATE_KEY!,
-      {
-        subject: "accessApi",
-        expiresIn: "1h",
-      }
+      { subject: "accessApi", expiresIn: "1h" }
     );
 
     const refreshToken = jwt.sign(
-      {
-        id: user.id,
-        role: user.role,
-      },
+      { id: user.id, role: user.role },
       process.env.REFRESH_TOKEN_PRIVATE_KEY!,
-      {
-        subject: "refreshToken",
-        expiresIn: "7d",
-      }
+      { subject: "refreshToken", expiresIn: "7d" }
     );
 
     await prisma.refreshToken.create({
@@ -197,6 +173,129 @@ export const AuthController = {
       }
 
       return res.status(500).json({
+        message: err.message,
+      });
+    }
+  },
+
+  logout: async (req: LogoutRequest, res: Response): Promise<any> => {
+    try {
+      const authHeader = req.headers.authorization;
+
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({ message: "Access token not found" });
+      }
+
+      const accessToken = authHeader.split(" ")[1];
+      const refreshToken = req.body.refreshToken;
+
+      if (!accessToken || !refreshToken) {
+        return res.status(400).json({ message: "Token missing" });
+      }
+
+      // 1. Blacklist accessToken nếu cần
+      tokenBlacklist.add(accessToken);
+
+      // 2. Tìm và xoá refresh token khỏi DB
+      const userRefreshToken = await prisma.refreshToken.findUnique({
+        where: {
+          token: refreshToken,
+        },
+      });
+
+      if (userRefreshToken) {
+        await prisma.refreshToken.delete({
+          where: {
+            id: userRefreshToken.id,
+          },
+        });
+      }
+
+      res.clearCookie("refreshToken");
+      return res.json({ message: "Logout successful" });
+    } catch (err: any) {
+      return res.status(500).json({
+        message: err.message,
+      });
+    }
+  },
+
+  verifyOtp: async (req: LogoutRequest, res: Response): Promise<any> => {
+    try {
+      const { otp, userId } = req.body;
+      if (!otp || !userId) {
+        return res.status(422).json({
+          message: "Empty Otp detail not allowed",
+        });
+      }
+      const userOtpVerify = await prisma.userVerifyOtp.findFirst({
+        where: {
+          userId: userId,
+        },
+      });
+
+      if (!userOtpVerify) {
+        return res.status(401).json({
+          message:
+            "Account doesn't exists. Please sign up or sign in account valid",
+        });
+      }
+      const expiredAt = userOtpVerify.expiredAt;
+      const hashedOtp = userOtpVerify.otp;
+      if (expiredAt.getTime() < Date.now()) {
+        await prisma.userVerifyOtp.deleteMany({
+          where: {
+            userId: userId,
+          },
+        });
+        return res.status(401).json({
+          message: "Otp expired. Please request again",
+        });
+      } else {
+        const validOtp = await bcrypt.compare(otp, hashedOtp);
+        if (!validOtp) {
+          return res.status(401).json({
+            message: "Otp invalid. Check your email",
+          });
+        } else {
+          await prisma.userVerifyOtp.deleteMany({
+            where: {
+              userId: userId,
+            },
+          });
+          return res.status(401).json({
+            status: "VERIFIED",
+            message: "User email verified successfully",
+          });
+        }
+      }
+    } catch (err: any) {
+      return res.status(500).json({
+        status: "FAILED",
+        message: err.message,
+      });
+    }
+  },
+  resendVerifyOtp: async (req: LogoutRequest, res: Response): Promise<any> => {
+    try {
+      let { userId, email } = req.body;
+
+      if (!email || !userId) {
+        return res.status(422).json({
+          message: "Empty email detail is not allowed",
+        });
+      } else {
+        await prisma.userVerifyOtp.deleteMany({
+          where: {
+            userId: userId,
+          },
+        });
+
+        await sendEmailOTP({ email, id: userId }, res);
+      }
+    } catch (err: any) {
+      return res.status(500).json({
+        status: "FAILED",
         message: err.message,
       });
     }

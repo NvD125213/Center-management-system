@@ -16,6 +16,8 @@
     "@types/express": "^5.0.1",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.13.14",
+    "@types/nodemailer": "^6.4.17",
+    "@types/speakeasy": "^2.0.10",
     "nodemon": "^3.1.9",
     "prisma": "^6.5.0",
     "ts-node": "^10.9.2",
@@ -27,6 +29,9 @@
     "bcryptjs": "^3.0.2",
     "express": "^5.1.0",
     "express-validator": "^7.2.1",
-    "jsonwebtoken": "^9.0.2"
+    "ioredis": "^5.6.1",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.10.0",
+    "speakeasy": "^2.0.0"
   }
 }
