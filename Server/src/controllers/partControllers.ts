@@ -4,6 +4,7 @@ import { Request, Response } from "express";
 const prisma = new PrismaClient();
 
 interface PartType {
+  id: number;
   name: string;
   exam_id: number;
   order: number;
@@ -15,6 +16,9 @@ export const PartController = {
       const parts = await prisma.part.findMany({
         where: {
           deleted_at: null,
+        },
+        orderBy: {
+          order: "asc",
         },
       });
 
@@ -39,15 +43,12 @@ export const PartController = {
     res: Response
   ): Promise<any> => {
     try {
-      const { name, exam_id, order } = req.body;
+      const { id, name, order } = req.body;
 
       if (!name) {
         return res.status(422).json({ error: "Name is required!" });
       }
 
-      if (!exam_id) {
-        return res.status(422).json({ error: "Exam is required!" });
-      }
       const existing = await prisma.part.findFirst({
         where: { name: name },
       });
@@ -58,8 +59,22 @@ export const PartController = {
         });
       }
 
+      let finalOrder = order;
+
+      if (order === undefined || order === null) {
+        const maxOrderPart = await prisma.part.findFirst({
+          where: { id: id },
+          orderBy: { order: "desc" },
+        });
+
+        finalOrder = maxOrderPart ? maxOrderPart.order + 1 : 1;
+      }
+
       const newPart = await prisma.part.create({
-        data: req.body,
+        data: {
+          name,
+          order: finalOrder,
+        },
       });
 
       return res.status(201).json({
@@ -73,27 +88,16 @@ export const PartController = {
 
   update: async (req: Request, res: Response): Promise<any> => {
     try {
-      const { name, exam_id } = req.body;
+      const { id, name } = req.body;
 
       if (!name) {
         return res.status(422).json({ error: "Name is required!" });
       }
 
-      const examExisting = await prisma.exam.findUnique({
-        where: { id: exam_id },
-      });
-
-      if (!examExisting) {
-        return res.status(404).json({
-          error: "Exam not found!",
-        });
-      }
-
       const updatedPart = await prisma.part.update({
-        where: { id: exam_id },
+        where: { id: id },
         data: {
           name,
-          exam_id,
         },
       });
 

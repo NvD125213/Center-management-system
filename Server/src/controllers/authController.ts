@@ -4,12 +4,17 @@ import { AuthType, LoginType } from "../Types/authType";
 import { UserType } from "../Types/userType";
 import { sendEmailOTP } from "../middlewares/auth";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
+import { OAuth2Client } from "google-auth-library";
 import jwt from "jsonwebtoken";
+import "../config/passport";
 const prisma = new PrismaClient();
 
 export interface LogoutRequest extends Request {
   user?: UserType;
 }
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const tokenBlacklist = new Set();
 
@@ -101,6 +106,7 @@ export const AuthController = {
 
     return res.status(200).json({
       message: "Login successfully",
+      user: user,
       access_token: accessToken,
       refresh_token: refreshToken,
     });
@@ -220,7 +226,7 @@ export const AuthController = {
     }
   },
 
-  verifyOtp: async (req: LogoutRequest, res: Response): Promise<any> => {
+  verifyOtp: async (req: Request, res: Response): Promise<any> => {
     try {
       const { otp, userId } = req.body;
       if (!otp || !userId) {
@@ -263,9 +269,43 @@ export const AuthController = {
               userId: userId,
             },
           });
-          return res.status(401).json({
+          await prisma.refreshToken.deleteMany({
+            where: { userId: userId },
+          });
+
+          const user = await prisma.user.findUnique({
+            where: { id: userId },
+          });
+
+          const accessToken = jwt.sign(
+            { id: userId, role: user?.role },
+            process.env.ACCESS_TOKEN_PRIVATE_KEY!,
+            { subject: "accessApi", expiresIn: "1h" }
+          );
+
+          const refreshToken = jwt.sign(
+            { id: user?.id, role: user?.role },
+            process.env.REFRESH_TOKEN_PRIVATE_KEY!,
+            { subject: "refreshToken", expiresIn: "7d" }
+          );
+          if (!user || !user.id) {
+            return res.status(404).json({
+              message: "User not found",
+            });
+          }
+
+          await prisma.refreshToken.create({
+            data: {
+              userId: user?.id,
+              token: refreshToken,
+            },
+          });
+
+          return res.status(200).json({
             status: "VERIFIED",
-            message: "User email verified successfully",
+            message: "Login successfully",
+            access_token: accessToken,
+            refresh_token: refreshToken,
           });
         }
       }
@@ -276,7 +316,7 @@ export const AuthController = {
       });
     }
   },
-  resendVerifyOtp: async (req: LogoutRequest, res: Response): Promise<any> => {
+  resendVerifyOtp: async (req: Request, res: Response): Promise<any> => {
     try {
       let { userId, email } = req.body;
 

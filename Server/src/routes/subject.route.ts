@@ -8,5 +8,5 @@ router.get("/:id", SubjectController.getByID);
 router.post("/", SubjectController.create);
 router.put("/:id", SubjectController.update);
 router.delete("/:id", SubjectController.delete);
-
+router.get("/type-skill/:id", SubjectController.getSubjectByskillType);
 export default router;

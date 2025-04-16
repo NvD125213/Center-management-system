@@ -38,39 +38,52 @@ export const ExamController = {
     res: Response
   ): Promise<any> => {
     try {
-      const { name, subject_id } = req.body;
+      const { subject_id, name } = req.body;
 
-      if (!name) {
-        return res.status(422).json({ error: "Name is required!" });
+      if (!subject_id || !name) {
+        return res.status(400).json({ error: "Missing required fields" });
       }
-
-      const existing = await prisma.exam.findUnique({
-        where: { name },
+      const existingName = await prisma.exam.findUnique({
+        where: {
+          name: name,
+        },
       });
 
-      if (existing && !existing.deleted_at) {
+      if (existingName) {
         return res.status(409).json({
-          error: `${name} already exists!`,
+          message: "Exam already exists",
         });
       }
-
-      if (!subject_id) {
-        return res.status(422).json({
-          error: "Subject id is required!",
-        });
-      } else {
-        if (!(await prisma.subject.findUnique({ where: { id: subject_id } }))) {
-          return res.status(404).json({
-            error: "Subject not found!",
-          });
-        }
-      }
-
+      // 1. Tạo Exam
       const newExam = await prisma.exam.create({
-        data: req.body,
+        data: {
+          subject_id: Number(subject_id),
+          name,
+        },
       });
 
-      return res.status(201).json(newExam);
+      // 2. Lấy tất cả các Part còn hoạt động (chưa bị soft-delete)
+      const parts = await prisma.part.findMany({
+        where: {
+          deleted_at: null,
+        },
+      });
+
+      // 3. Tạo các ExamPart tương ứng
+      const examPartsData = parts.map((part) => ({
+        exam_id: newExam.id,
+        part_id: part.id,
+      }));
+
+      await prisma.examPart.createMany({
+        data: examPartsData,
+        skipDuplicates: true, // để tránh lỗi nếu có dữ liệu trùng
+      });
+
+      return res.status(201).json({
+        message: "Exam created successfully.",
+        exam: newExam,
+      });
     } catch (err: any) {
       return res.status(500).json({ error: err.message });
     }

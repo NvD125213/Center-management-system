@@ -7,11 +7,6 @@ datasource db {
   url      = env("DATABASE_URL_AIVEN")
 }
 
-enum Element {
-  images
-  audio
-}
-
 enum Option {
   A
   B
@@ -44,12 +39,18 @@ enum PaymentStatus {
   REJECTED  @map("Từ chối")
 }
 
+enum TypeElement {
+  audio
+  image
+}
+
 model User {
   id            Int             @id @default(autoincrement())
   full_name     String?
   email         String          @unique @default("")
   phone_number  String          @unique @default("")
   password      String          @default("")
+  googleId      String?         @unique
   is_active     Boolean         @default(true)
   role          Int             @default(1)
   create_at     DateTime        @default(now())
@@ -74,6 +75,8 @@ model RefreshToken {
   user      User     @relation(fields: [userId], references: [id])
   isRevoked Boolean  @default(false)
   createdAt DateTime @default(now())
+
+  @@map("refresh_tokens")
 }
 
 model UserVerifyOtp {
@@ -83,6 +86,8 @@ model UserVerifyOtp {
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
   expiredAt DateTime
+
+  @@map("user_verify_otps")
 }
 
 model Subject {
@@ -92,35 +97,46 @@ model Subject {
   update_at  DateTime  @updatedAt
   deleted_at DateTime?
   exams      Exam[]
+  skillType  Int?      @default(1)
 
   @@map("subjects")
 }
 
 model Exam {
-  id         Int       @id @default(autoincrement())
-  subject    Subject   @relation(fields: [subject_id], references: [id])
+  id         Int        @id @default(autoincrement())
+  subject    Subject    @relation(fields: [subject_id], references: [id])
   subject_id Int
-  name       String    @unique
-  create_at  DateTime  @default(now())
-  update_at  DateTime  @updatedAt
+  name       String     @unique
+  create_at  DateTime   @default(now())
+  update_at  DateTime   @updatedAt
   deleted_at DateTime?
-  parts      Part[]
+  examParts  ExamPart[]
   histories  History[]
   comments   Comment[]
 
   @@map("exams")
 }
 
+model ExamPart {
+  id      Int  @id @default(autoincrement())
+  exam    Exam @relation(fields: [exam_id], references: [id])
+  exam_id Int
+  part    Part @relation(fields: [part_id], references: [id])
+  part_id Int
+
+  @@unique([exam_id, part_id])
+  @@map("exam_parts")
+}
+
 model Part {
   id              Int             @id @default(autoincrement())
-  exam            Exam            @relation(fields: [exam_id], references: [id])
-  exam_id         Int
   name            String
   order           Int
   create_at       DateTime        @default(now())
   update_at       DateTime        @updatedAt
   deleted_at      DateTime?
   question_groups QuestionGroup[]
+  examParts       ExamPart[]
 
   @@map("parts")
 }
@@ -129,12 +145,13 @@ model QuestionGroup {
   id          Int        @id @default(autoincrement())
   part        Part       @relation(fields: [part_id], references: [id])
   part_id     Int
-  element     Element
+  order       Int
   description String
   create_at   DateTime   @default(now())
   update_at   DateTime   @updatedAt
   deleted_at  DateTime?
   questions   Question[]
+  elements    Element[]  @relation("GroupElements") // các element thuộc group
 
   @@map("question_groups")
 }
@@ -145,13 +162,27 @@ model Question {
   group_id       Int
   option         Option
   score          Int
+  order          Int
   answer_correct String        @unique
   create_at      DateTime      @default(now())
   update_at      DateTime      @updatedAt
   deleted_at     DateTime?
   answers        Answer[]
+  elements       Element[]     @relation("QuestionElements") // các element thuộc question
 
   @@map("questions")
+}
+
+model Element {
+  id          Int            @id @default(autoincrement())
+  type        TypeElement    @default(audio)
+  url         String
+  group       QuestionGroup? @relation("GroupElements", fields: [group_id], references: [id])
+  group_id    Int?
+  question    Question?      @relation("QuestionElements", fields: [question_id], references: [id])
+  question_id Int?
+
+  @@map("elements")
 }
 
 model Answer {

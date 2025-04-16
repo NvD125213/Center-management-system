@@ -5,6 +5,7 @@ const prisma = new PrismaClient();
 
 interface SubjectType {
   name: string;
+  skillType: number;
 }
 
 export const SubjectController = {
@@ -52,10 +53,13 @@ export const SubjectController = {
     res: Response
   ): Promise<any> => {
     try {
-      const { name } = req.body;
+      const { name, skillType } = req.body;
 
       if (!name) {
         return res.status(422).json({ error: "Name is required!" });
+      }
+      if (!skillType) {
+        return res.status(422).json({ error: "Skill type is required!" });
       }
 
       const existing = await prisma.subject.findUnique({
@@ -71,6 +75,7 @@ export const SubjectController = {
       const subject = await prisma.subject.create({
         data: {
           name,
+          skillType,
         },
       });
 
@@ -140,6 +145,23 @@ export const SubjectController = {
       return res.status(200).json({
         message: "Subject was deleted!",
         data: deletedSubject,
+      });
+    } catch (err: any) {
+      return res.status(500).json({
+        error: err.message,
+      });
+    }
+  },
+
+  getSubjectByskillType: async (req: Request, res: Response): Promise<any> => {
+    try {
+      const { id } = req.params;
+      const subjects = await prisma.subject.findMany({
+        where: { skillType: Number(id) },
+      });
+
+      return res.status(200).json({
+        data: subjects,
       });
     } catch (err: any) {
       return res.status(500).json({
