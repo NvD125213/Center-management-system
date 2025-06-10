@@ -1,18 +1,18 @@
 import { Outlet } from "react-router";
 import Footer from "../components/Footer/Footer";
-import Hero from "../components/Hero/Hero.jsx";
+import Navbar from "../components/Navbar/Navbar";
+import ContactForm from "../components/Banner/Banner2";
 
 const AppLayout = () => {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header cố định */}
-      <Hero />
-
+      <Navbar />
       {/* Nội dung trang */}
       <main className="flex-1">
         <Outlet />
       </main>
-
+      <ContactForm />
       <Footer />
     </div>
   );

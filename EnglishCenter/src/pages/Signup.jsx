@@ -1,7 +1,6 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Divider from "@mui/material/Divider";
 import FormLabel from "@mui/material/FormLabel";
 import FormControl from "@mui/material/FormControl";
 import Link from "@mui/material/Link";
@@ -24,6 +23,9 @@ import Cookies from "js-cookie";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "../stores/authSlice";
 import { motion } from "framer-motion";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import IconButton from "@mui/material/IconButton";
+import InputAdornment from "@mui/material/InputAdornment";
 
 const MotionBox = motion(Box);
 
@@ -32,13 +34,13 @@ const Card = styled(MuiCard)(({ theme }) => ({
   flexDirection: "column",
   alignSelf: "center",
   width: "100%",
-  padding: theme.spacing(4),
-  gap: theme.spacing(3),
+  padding: theme.spacing(3),
+  gap: theme.spacing(2),
   margin: "auto",
   borderRadius: theme.spacing(2),
   [theme.breakpoints.up("sm")]: {
-    maxWidth: "450px",
-    padding: theme.spacing(5),
+    maxWidth: "600px",
+    padding: theme.spacing(4),
   },
   background: alpha(theme.palette.background.paper, 0.8),
   backdropFilter: "blur(10px)",
@@ -56,8 +58,12 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
   padding: theme.spacing(2),
   position: "relative",
   overflow: "hidden",
+  background: `linear-gradient(135deg, ${alpha(
+    theme.palette.primary.main,
+    0.05
+  )} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
   [theme.breakpoints.up("sm")]: {
-    padding: theme.spacing(4),
+    padding: theme.spacing(3),
   },
   "&::before": {
     content: '""',
@@ -66,70 +72,80 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: `linear-gradient(135deg, ${alpha(
+    background: `radial-gradient(circle at 50% 0%, ${alpha(
       theme.palette.primary.main,
       0.1
-    )} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
-    zIndex: -1,
-  },
-  "&::after": {
-    content: '""',
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: "100%",
-    height: "100%",
-    background: `radial-gradient(circle at center, ${alpha(
-      theme.palette.primary.main,
-      0.05
-    )} 0%, transparent 70%)`,
+    )} 0%, transparent 50%)`,
     zIndex: -1,
   },
 }));
 
 const SocialButton = styled(Button)(({ theme }) => ({
-  padding: theme.spacing(1.5),
-  borderRadius: theme.spacing(1),
+  padding: theme.spacing(1.75),
+  borderRadius: theme.spacing(1.5),
   textTransform: "none",
   fontSize: "1rem",
   fontWeight: 500,
-  transition: "all 0.2s ease-in-out",
+  transition: "all 0.3s ease-in-out",
   borderColor: alpha(theme.palette.divider, 0.2),
+  backgroundColor: alpha(theme.palette.background.paper, 0.8),
+  backdropFilter: "blur(10px)",
   "&:hover": {
-    transform: "translateY(-1px)",
-    boxShadow: theme.shadows[2],
+    transform: "translateY(-2px)",
+    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.1)}`,
     borderColor: theme.palette.primary.main,
+    backgroundColor: alpha(theme.palette.background.paper, 0.9),
   },
 }));
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
   "& .MuiOutlinedInput-root": {
-    borderRadius: theme.spacing(1),
-    transition: "all 0.2s ease-in-out",
+    borderRadius: theme.spacing(1.5),
+    transition: "all 0.3s ease-in-out",
+    backgroundColor: alpha(theme.palette.background.paper, 0.8),
+    backdropFilter: "blur(10px)",
     "&:hover": {
+      backgroundColor: alpha(theme.palette.background.paper, 0.9),
       "& .MuiOutlinedInput-notchedOutline": {
         borderColor: theme.palette.primary.main,
+        borderWidth: 2,
       },
     },
     "&.Mui-focused": {
+      backgroundColor: alpha(theme.palette.background.paper, 1),
       "& .MuiOutlinedInput-notchedOutline": {
         borderWidth: 2,
       },
     },
   },
+  "& .MuiInputLabel-root": {
+    transition: "all 0.2s ease-in-out",
+  },
+  "& .MuiInputLabel-root.Mui-focused": {
+    color: theme.palette.primary.main,
+  },
 }));
 
 const SubmitButton = styled(Button)(({ theme }) => ({
-  padding: theme.spacing(1.5),
-  borderRadius: theme.spacing(1),
+  padding: theme.spacing(1.75),
+  borderRadius: theme.spacing(1.5),
   textTransform: "none",
   fontSize: "1.1rem",
   fontWeight: 600,
-  transition: "all 0.2s ease-in-out",
+  transition: "all 0.3s ease-in-out",
+  background: `linear-gradient(45deg, ${theme.palette.primary.main} 0%, ${alpha(
+    theme.palette.primary.main,
+    0.8
+  )} 100%)`,
   "&:hover": {
-    transform: "translateY(-1px)",
-    boxShadow: theme.shadows[4],
+    transform: "translateY(-2px)",
+    boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.3)}`,
+    background: `linear-gradient(45deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
+  },
+  "&:disabled": {
+    background: theme.palette.action.disabledBackground,
+    transform: "none",
+    boxShadow: "none",
   },
 }));
 
@@ -173,6 +189,7 @@ export default function SignUpForm() {
   const [phoneError, setPhoneError] = React.useState(false);
   const [phoneErrorMessage, setPhoneErrorMessage] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
+  const [showPassword, setShowPassword] = React.useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -357,7 +374,7 @@ export default function SignUpForm() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        sx={{ width: "100%", maxWidth: "450px" }}>
+        sx={{ width: "100%", maxWidth: "600px" }}>
         <Card>
           <Typography
             component="h1"
@@ -366,7 +383,7 @@ export default function SignUpForm() {
               textAlign: "center",
               fontWeight: 700,
               color: "primary.main",
-              mb: 1,
+              mb: 0.5,
             }}>
             Tạo tài khoản mới
           </Typography>
@@ -375,7 +392,7 @@ export default function SignUpForm() {
             sx={{
               textAlign: "center",
               color: "text.secondary",
-              mb: 3,
+              mb: 2,
             }}>
             Đăng ký để bắt đầu học tập
           </Typography>
@@ -386,83 +403,102 @@ export default function SignUpForm() {
             sx={{
               display: "flex",
               flexDirection: "column",
-              gap: 2.5,
+              gap: 2,
             }}>
-            <FormControl>
-              <FormLabel htmlFor="name" sx={{ mb: 1, fontWeight: 500 }}>
-                Họ và tên
-              </FormLabel>
-              <StyledTextField
-                error={nameError}
-                helperText={nameErrorMessage}
-                id="name"
-                name="name"
-                placeholder="Nhập họ và tên của bạn"
-                autoComplete="name"
-                autoFocus
-                required
-                fullWidth
-                variant="outlined"
-                color={nameError ? "error" : "primary"}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="email" sx={{ mb: 1, fontWeight: 500 }}>
-                Email
-              </FormLabel>
-              <StyledTextField
-                error={emailError}
-                helperText={emailErrorMessage}
-                id="email"
-                type="email"
-                name="email"
-                placeholder="your@email.com"
-                autoComplete="email"
-                required
-                fullWidth
-                variant="outlined"
-                color={emailError ? "error" : "primary"}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="phone" sx={{ mb: 1, fontWeight: 500 }}>
-                Số điện thoại
-              </FormLabel>
-              <StyledTextField
-                error={phoneError}
-                helperText={phoneErrorMessage}
-                id="phone"
-                name="phone"
-                placeholder="0987654321"
-                autoComplete="tel"
-                required
-                fullWidth
-                variant="outlined"
-                color={phoneError ? "error" : "primary"}
-                inputProps={{
-                  maxLength: 10,
-                  pattern: "^(0[3|5|7|8|9])+([0-9]{8})$",
-                }}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="password" sx={{ mb: 1, fontWeight: 500 }}>
-                Mật khẩu
-              </FormLabel>
-              <StyledTextField
-                error={passwordError}
-                helperText={passwordErrorMessage}
-                name="password"
-                placeholder="••••••"
-                type="password"
-                id="password"
-                autoComplete="new-password"
-                required
-                fullWidth
-                variant="outlined"
-                color={passwordError ? "error" : "primary"}
-              />
-            </FormControl>
+            <Stack spacing={2}>
+              <FormControl>
+                <FormLabel htmlFor="name" sx={{ mb: 0.5, fontWeight: 500 }}>
+                  Họ và tên
+                </FormLabel>
+                <StyledTextField
+                  error={nameError}
+                  helperText={nameErrorMessage}
+                  id="name"
+                  name="name"
+                  placeholder="Nhập họ và tên của bạn"
+                  autoComplete="name"
+                  autoFocus
+                  required
+                  fullWidth
+                  variant="outlined"
+                  color={nameError ? "error" : "primary"}
+                />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel htmlFor="email" sx={{ mb: 0.5, fontWeight: 500 }}>
+                  Email
+                </FormLabel>
+                <StyledTextField
+                  error={emailError}
+                  helperText={emailErrorMessage}
+                  id="email"
+                  type="email"
+                  name="email"
+                  placeholder="your@email.com"
+                  autoComplete="email"
+                  required
+                  fullWidth
+                  variant="outlined"
+                  color={emailError ? "error" : "primary"}
+                />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel htmlFor="phone" sx={{ mb: 0.5, fontWeight: 500 }}>
+                  Số điện thoại
+                </FormLabel>
+                <StyledTextField
+                  error={phoneError}
+                  helperText={phoneErrorMessage}
+                  id="phone"
+                  name="phone"
+                  placeholder="0987654321"
+                  autoComplete="tel"
+                  required
+                  fullWidth
+                  variant="outlined"
+                  color={phoneError ? "error" : "primary"}
+                  inputProps={{
+                    maxLength: 10,
+                    pattern: "^(0[3|5|7|8|9])+([0-9]{8})$",
+                  }}
+                />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel htmlFor="password" sx={{ mb: 0.5, fontWeight: 500 }}>
+                  Mật khẩu
+                </FormLabel>
+                <StyledTextField
+                  error={passwordError}
+                  helperText={passwordErrorMessage}
+                  name="password"
+                  placeholder="••••••"
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  autoComplete="new-password"
+                  required
+                  fullWidth
+                  variant="outlined"
+                  color={passwordError ? "error" : "primary"}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                          sx={{ color: "text.secondary" }}>
+                          {showPassword ? <FaEyeSlash /> : <FaEye />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </FormControl>
+            </Stack>
+
             <SubmitButton
               type="submit"
               fullWidth
@@ -472,34 +508,14 @@ export default function SignUpForm() {
               {isLoading ? "Đang xử lý..." : "Đăng ký"}
             </SubmitButton>
           </Box>
-          <Divider sx={{ my: 3 }}>
-            <Typography variant="body2" color="text.secondary">
-              hoặc đăng ký với
-            </Typography>
-          </Divider>
-          <Stack spacing={2}>
-            <SocialButton
-              fullWidth
-              variant="outlined"
-              onClick={handleGoogleSignIn}
-              startIcon={<GoogleIcon />}
-              disabled={isLoading}>
-              Đăng ký với Google
-            </SocialButton>
-            <SocialButton
-              fullWidth
-              variant="outlined"
-              onClick={() => toast.error("Tính năng đang được phát triển")}
-              startIcon={<FacebookIcon />}
-              disabled={isLoading}>
-              Đăng ký với Facebook
-            </SocialButton>
+
+          <Stack spacing={1.5}>
             <Typography
               variant="body2"
               sx={{
                 textAlign: "center",
                 color: "text.secondary",
-                mt: 2,
+                mt: 1.5,
               }}>
               Đã có tài khoản?{" "}
               <Link
@@ -509,7 +525,10 @@ export default function SignUpForm() {
                   color: "primary.main",
                   fontWeight: 600,
                   textDecoration: "none",
-                  "&:hover": { textDecoration: "underline" },
+                  "&:hover": {
+                    textDecoration: "underline",
+                    color: "primary.dark",
+                  },
                 }}>
                 Đăng nhập ngay
               </Link>

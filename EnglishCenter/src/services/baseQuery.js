@@ -32,22 +32,12 @@ export const baseQueryWithReauth = async (args, api, extraOptions) => {
     );
 
     if (refreshResult.data) {
-      // Store the new tokens in cookies
-      Cookies.set("access_token", refreshResult.data.access_token, {
-        expires: 1, // 1 day
-        secure: true,
-        sameSite: "strict",
-      });
-      Cookies.set("refresh_token", refreshResult.data.refresh_token, {
-        expires: 7, // 7 days
-        secure: true,
-        sameSite: "strict",
-      });
-
-      // Retry the original query with the new token
+      Cookies.set("access_token", refreshResult.data.access_token);
+      if (refreshResult.data.refresh_token) {
+        Cookies.set("refresh_token", refreshResult.data.refresh_token);
+      }
       result = await baseQuery(args, api, extraOptions);
     } else {
-      // If refresh token fails, clear cookies and redirect to login
       Cookies.remove("access_token");
       Cookies.remove("refresh_token");
     }

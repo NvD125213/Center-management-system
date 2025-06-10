@@ -9,6 +9,8 @@ import {
   Fade,
 } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { useNavigate } from "react-router-dom";
+import { createSlug } from "../../utils/stringUtils";
 
 const theme = createTheme({
   palette: {
@@ -20,16 +22,24 @@ const theme = createTheme({
   },
 });
 
-const CardMini = ({ title, image }) => {
+const CardMini = ({ id, title, image }) => {
   const [hovered, setHovered] = React.useState(false);
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    const slug = createSlug(title);
+    navigate(`/blog/detail/${id}/${slug}`);
+  };
 
   return (
     <ThemeProvider theme={theme}>
       <Fade in timeout={800}>
         <Card
+          onClick={handleClick}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
           sx={{
+            cursor: "pointer",
             width: "100%",
             maxWidth: "400px",
             borderRadius: 2,
@@ -106,6 +116,7 @@ const CardMini = ({ title, image }) => {
 };
 
 CardMini.propTypes = {
+  id: PropTypes.number.isRequired,
   title: PropTypes.string.isRequired,
   image: PropTypes.string.isRequired,
   description: PropTypes.string,

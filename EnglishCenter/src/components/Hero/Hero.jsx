@@ -15,8 +15,8 @@ import a1 from "../../assets/Student/s1.jpg";
 import a2 from "../../assets/Student/s2.jpg";
 import a3 from "../../assets/Student/a3.jpg";
 import a4 from "../../assets/Student/a4.jpg";
-
-import Navbar from "../Navbar/Navbar";
+import PropTypes from "prop-types";
+import Breadcrumb from "../Common/Breadcrumb";
 
 // Sample images - you should replace these with your actual images
 const heroImages = [
@@ -73,7 +73,7 @@ export const FadeUp = (delay) => {
   };
 };
 
-const Hero = () => {
+const Hero = ({ title, breadcrumbPaths }) => {
   const sliderSettings = {
     dots: true,
     infinite: true,
@@ -94,9 +94,60 @@ const Hero = () => {
     ),
   };
 
+  // If title is provided, render the blue background hero
+  if (title) {
+    return (
+      <section className="relative min-h-[40vh] bg-gradient-to-br from-blue-50 via-sky-50 to-blue-100 overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%232563eb' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+              backgroundSize: "60px 60px",
+            }}></div>
+        </div>
+
+        {/* Decorative Elements */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+          <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-sky-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+        </div>
+
+        <div className="container relative z-10 min-h-[40vh] flex items-center justify-center">
+          <div className="w-full max-w-4xl mx-auto px-4">
+            <motion.div
+              variants={FadeUp(0.4)}
+              initial="initial"
+              animate="animate"
+              className="text-center space-y-6">
+              <motion.h1
+                variants={FadeUp(0.4)}
+                initial="initial"
+                animate="animate"
+                className="text-4xl pb-2 lg:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-sky-500 leading-tight">
+                {title}
+              </motion.h1>
+              {breadcrumbPaths && (
+                <motion.div
+                  variants={FadeUp(0.6)}
+                  initial="initial"
+                  animate="animate"
+                  className="flex justify-center">
+                  <Breadcrumb paths={breadcrumbPaths} />
+                </motion.div>
+              )}
+            </motion.div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // If no title provided, render the full homepage hero
   return (
     <section className="bg-light overflow-hidden relative min-h-screen">
-      <Navbar />
       <div className="container grid grid-cols-1 md:grid-cols-2 min-h-[calc(100vh-80px)]">
         {/* Brand Info */}
         <div className="flex flex-col justify-center py-14 md:py-0 relative z-20">
@@ -239,6 +290,16 @@ const Hero = () => {
   );
 };
 
+Hero.propTypes = {
+  title: PropTypes.string,
+  breadcrumbPaths: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      url: PropTypes.string.isRequired,
+    })
+  ),
+};
+
 export default Hero;
 
 // Add these styles at the end of your file or in your CSS file
@@ -316,6 +377,33 @@ const styles = `
   .hero-slider .slick-arrow:hover div {
     background: white;
     transform: scale(1.05);
+  }
+
+  @keyframes blob {
+    0% {
+      transform: translate(0px, 0px) scale(1);
+    }
+    33% {
+      transform: translate(30px, -50px) scale(1.1);
+    }
+    66% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+    100% {
+      transform: translate(0px, 0px) scale(1);
+    }
+  }
+
+  .animate-blob {
+    animation: blob 7s infinite;
+  }
+
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+
+  .animation-delay-4000 {
+    animation-delay: 4s;
   }
 `;
 

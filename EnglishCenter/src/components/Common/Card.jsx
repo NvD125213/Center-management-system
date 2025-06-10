@@ -10,6 +10,8 @@ import {
 } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { MdAccessTime } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
+import { createSlug } from "../../utils/stringUtils";
 
 const theme = createTheme({
   palette: {
@@ -21,16 +23,24 @@ const theme = createTheme({
   },
 });
 
-const BlogCard = ({ title, image, description, create_at }) => {
+const BlogCard = ({ id, title, image_title, description, create_at }) => {
   const [hovered, setHovered] = React.useState(false);
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    const slug = createSlug(title);
+    navigate(`/blog/detail/${id}/${slug}`);
+  };
 
   return (
     <ThemeProvider theme={theme}>
       <Fade in timeout={800}>
         <Card
+          onClick={handleClick}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
           sx={{
+            cursor: "pointer",
             width: "100%",
             maxWidth: "800px",
             borderRadius: 2,
@@ -71,7 +81,7 @@ const BlogCard = ({ title, image, description, create_at }) => {
                 transition: "transform 0.3s ease",
                 transform: hovered ? "scale(1.05)" : "scale(1)",
               }}
-              image={image}
+              image={image_title}
               alt={title}
             />
           </Box>
@@ -123,8 +133,9 @@ const BlogCard = ({ title, image, description, create_at }) => {
 };
 
 BlogCard.propTypes = {
+  id: PropTypes.number.isRequired,
   title: PropTypes.string.isRequired,
-  image: PropTypes.string.isRequired,
+  image_title: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
   create_at: PropTypes.string.isRequired,
 };

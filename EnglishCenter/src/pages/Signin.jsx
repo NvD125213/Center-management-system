@@ -33,13 +33,13 @@ const Card = styled(MuiCard)(({ theme }) => ({
   flexDirection: "column",
   alignSelf: "center",
   width: "100%",
-  padding: theme.spacing(4),
-  gap: theme.spacing(3),
+  padding: theme.spacing(3),
+  gap: theme.spacing(2),
   margin: "auto",
   borderRadius: theme.spacing(2),
   [theme.breakpoints.up("sm")]: {
-    maxWidth: "450px",
-    padding: theme.spacing(5),
+    maxWidth: "600px",
+    padding: theme.spacing(4),
   },
   background: alpha(theme.palette.background.paper, 0.8),
   backdropFilter: "blur(10px)",
@@ -58,7 +58,7 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
   position: "relative",
   overflow: "hidden",
   [theme.breakpoints.up("sm")]: {
-    padding: theme.spacing(4),
+    padding: theme.spacing(3),
   },
   "&::before": {
     content: '""',
@@ -185,7 +185,7 @@ export default function SignIn() {
 
     if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
       setEmailError(true);
-      setEmailErrorMessage("Please enter a valid email address.");
+      setEmailErrorMessage("Hãy nhập đúng địa chỉ email");
       isValid = false;
     } else {
       setEmailError(false);
@@ -194,7 +194,7 @@ export default function SignIn() {
 
     if (!password.value || password.value.length < 6) {
       setPasswordError(true);
-      setPasswordErrorMessage("Password must be at least 6 characters long.");
+      setPasswordErrorMessage("Nhập đầy đủ password trên 6 ký tự");
       isValid = false;
     } else {
       setPasswordError(false);
@@ -299,168 +299,163 @@ export default function SignIn() {
   };
 
   return (
-    <SignInContainer
-      direction="column"
-      justifyContent="center"
-      alignItems="center">
-      <MotionBox
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        sx={{ width: "100%", maxWidth: "450px" }}>
-        <Card>
-          <Typography
-            component="h1"
-            variant="h4"
-            sx={{
-              textAlign: "center",
-              fontWeight: 700,
-              color: "primary.main",
-              mb: 1,
-            }}>
-            Chào mừng trở lại!
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{
-              textAlign: "center",
-              color: "text.secondary",
-              mb: 3,
-            }}>
-            Đăng nhập để tiếp tục
-          </Typography>
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            noValidate
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 2.5,
-            }}>
-            <FormControl>
-              <FormLabel htmlFor="email" sx={{ mb: 1, fontWeight: 500 }}>
-                Email
-              </FormLabel>
-              <StyledTextField
-                error={emailError}
-                helperText={emailErrorMessage}
-                id="email"
-                type="email"
-                name="email"
-                placeholder="your@email.com"
-                autoComplete="email"
-                autoFocus
-                required
-                fullWidth
-                variant="outlined"
-                color={emailError ? "error" : "primary"}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="password" sx={{ mb: 1, fontWeight: 500 }}>
-                Mật khẩu
-              </FormLabel>
-              <StyledTextField
-                error={passwordError}
-                helperText={passwordErrorMessage}
-                name="password"
-                placeholder="••••••"
-                type="password"
-                id="password"
-                autoComplete="current-password"
-                required
-                fullWidth
-                variant="outlined"
-                color={passwordError ? "error" : "primary"}
-              />
-            </FormControl>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    value="remember"
-                    color="primary"
-                    sx={{
-                      "&.Mui-checked": {
-                        color: "primary.main",
-                      },
-                    }}
-                  />
-                }
-                label="Ghi nhớ đăng nhập"
-                sx={{ color: "text.secondary" }}
-              />
-              <Link
-                component="button"
-                variant="body2"
-                sx={{
-                  color: "primary.main",
-                  textDecoration: "none",
-                  "&:hover": { textDecoration: "underline" },
-                }}>
-                Quên mật khẩu?
-              </Link>
-            </Box>
-            <SubmitButton
-              type="submit"
-              fullWidth
-              variant="contained"
-              disabled={isLoading}
-              sx={{ mt: 1 }}>
-              {isLoading ? "Đang xử lý..." : "Đăng nhập"}
-            </SubmitButton>
-          </Box>
-          <Divider sx={{ my: 3 }}>
-            <Typography variant="body2" color="text.secondary">
-              hoặc tiếp tục với
-            </Typography>
-          </Divider>
-          <Stack spacing={2}>
-            <SocialButton
-              fullWidth
-              variant="outlined"
-              onClick={handleGoogleSignIn}
-              startIcon={<GoogleIcon />}
-              disabled={isLoading}>
-              Đăng nhập với Google
-            </SocialButton>
-            <SocialButton
-              fullWidth
-              variant="outlined"
-              onClick={() => toast.error("Tính năng đang được phát triển")}
-              startIcon={<FacebookIcon />}
-              disabled={isLoading}>
-              Đăng nhập với Facebook
-            </SocialButton>
+    <>
+      <Button
+        onClick={() => navigate("/")}
+        sx={{
+          position: "absolute",
+          top: 16,
+          left: 16,
+          zIndex: 1000,
+        }}>
+        Quay lại trang chủ
+      </Button>{" "}
+      <SignInContainer
+        direction="column"
+        justifyContent="center"
+        alignItems="center">
+        <MotionBox
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          sx={{ width: "100%", maxWidth: "600px" }}>
+          <Card>
             <Typography
-              variant="body2"
+              component="h1"
+              variant="h4"
+              sx={{
+                textAlign: "center",
+                fontWeight: 700,
+                color: "primary.main",
+              }}>
+              Chào mừng trở lại!
+            </Typography>
+            <Typography
+              variant="body1"
               sx={{
                 textAlign: "center",
                 color: "text.secondary",
-                mt: 2,
               }}>
-              Chưa có tài khoản?{" "}
-              <Link
-                component="button"
-                onClick={() => navigate("/signup")}
-                sx={{
-                  color: "primary.main",
-                  fontWeight: 600,
-                  textDecoration: "none",
-                  "&:hover": { textDecoration: "underline" },
-                }}>
-                Đăng ký ngay
-              </Link>
+              Đăng nhập để tiếp tục
             </Typography>
-          </Stack>
-        </Card>
-      </MotionBox>
-    </SignInContainer>
+            <Box
+              component="form"
+              onSubmit={handleSubmit}
+              noValidate
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 2,
+              }}>
+              <Stack spacing={2}>
+                <FormControl>
+                  <FormLabel htmlFor="email" sx={{ mb: 0.5, fontWeight: 500 }}>
+                    Email
+                  </FormLabel>
+                  <StyledTextField
+                    error={emailError}
+                    helperText={emailErrorMessage}
+                    id="email"
+                    type="email"
+                    name="email"
+                    placeholder="your@email.com"
+                    autoComplete="email"
+                    autoFocus
+                    required
+                    fullWidth
+                    variant="outlined"
+                    color={emailError ? "error" : "primary"}
+                  />
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel
+                    htmlFor="password"
+                    sx={{ mb: 0.5, fontWeight: 500 }}>
+                    Mật khẩu
+                  </FormLabel>
+                  <StyledTextField
+                    error={passwordError}
+                    helperText={passwordErrorMessage}
+                    name="password"
+                    placeholder="••••••"
+                    type="password"
+                    id="password"
+                    autoComplete="current-password"
+                    required
+                    fullWidth
+                    variant="outlined"
+                    color={passwordError ? "error" : "primary"}
+                  />
+                </FormControl>
+              </Stack>
+
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mt: 0.5,
+                }}></Box>
+
+              <SubmitButton
+                type="submit"
+                fullWidth
+                variant="contained"
+                disabled={isLoading}
+                sx={{ mt: 1 }}>
+                {isLoading ? "Đang xử lý..." : "Đăng nhập"}
+              </SubmitButton>
+            </Box>
+
+            <Divider sx={{ my: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                hoặc tiếp tục với
+              </Typography>
+            </Divider>
+
+            <Stack spacing={1.5}>
+              <SocialButton
+                fullWidth
+                variant="outlined"
+                onClick={handleGoogleSignIn}
+                startIcon={<GoogleIcon />}
+                disabled={isLoading}>
+                Đăng nhập với Google
+              </SocialButton>
+              <SocialButton
+                fullWidth
+                variant="outlined"
+                onClick={() => toast.error("Tính năng đang được phát triển")}
+                startIcon={<FacebookIcon />}
+                disabled={isLoading}>
+                Đăng nhập với Facebook
+              </SocialButton>
+
+              <Typography
+                variant="body2"
+                sx={{
+                  textAlign: "center",
+                  color: "text.secondary",
+                  mt: 1.5,
+                }}>
+                Chưa có tài khoản?{" "}
+                <Link
+                  component="button"
+                  onClick={() => navigate("/signup")}
+                  sx={{
+                    color: "primary.main",
+                    fontWeight: 600,
+                    textDecoration: "none",
+                    "&:hover": { textDecoration: "underline" },
+                  }}>
+                  Đăng ký ngay
+                </Link>
+              </Typography>
+            </Stack>
+          </Card>
+        </MotionBox>
+      </SignInContainer>
+    </>
   );
 }

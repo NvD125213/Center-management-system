@@ -10,19 +10,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { setCredentials, setError, setLoading } from "../../stores/authSlice";
 import { useGetMenusQuery } from "../../services/menuServices";
 
-// Hàm chuyển đổi tên thành slug
-const convertToSlug = (text) => {
-  return text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // Xóa dấu
-    .replace(/[đĐ]/g, "d") // Chuyển đổi đ/Đ thành d
-    .replace(/([^0-9a-z-\s])/g, "") // Xóa các ký tự đặc biệt
-    .replace(/(\s+)/g, "-") // Thay thế khoảng trắng bằng dấu -
-    .replace(/-+/g, "-") // Xóa các dấu - liên tiếp
-    .replace(/^-+|-+$/g, ""); // Xóa dấu - ở đầu và cuối
-};
-
 const RecursiveMenu = ({ items, level = 1 }) => {
   return (
     <ul className="bg-white shadow-lg rounded-md min-w-[200px] py-2">
@@ -30,7 +17,7 @@ const RecursiveMenu = ({ items, level = 1 }) => {
         <li key={item.id} className="relative">
           <div className="group/submenu">
             <Link
-              to={item.path}
+              to={item.slug}
               className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 w-full">
               <div className="flex items-center justify-between">
                 <span>{item.title}</span>
@@ -113,18 +100,16 @@ const Navbar = () => {
     }
 
     return items.map((item) => {
-      const currentPath = convertToSlug(item.name);
-      const fullPath = parentPath
-        ? `${parentPath}/${currentPath}`
-        : `/${currentPath}`;
+      // Thêm /blog/menu vào đường dẫn
+      const currentPath = item.slug ? `/blog/menu/${item.slug.trim()}` : "#";
 
       return {
         id: item.id,
         title: item.name,
-        path: fullPath,
+        slug: currentPath,
         children:
           item.children && item.children.length > 0
-            ? formatMenuItems(item.children, fullPath)
+            ? formatMenuItems(item.children)
             : undefined,
       };
     });
@@ -137,14 +122,17 @@ const Navbar = () => {
     }
 
     if (menuError) {
+      console.error("Menu error:", menuError);
       return [];
     }
 
     if (!menuData || !menuData.data) {
+      console.log("No menu data available");
       return [];
     }
 
-    return formatMenuItems(menuData.data);
+    const formattedItems = formatMenuItems(menuData.data);
+    return formattedItems;
   };
 
   const menuItems = getMenuItems();
@@ -188,10 +176,17 @@ const Navbar = () => {
             </div>
           ) : (
             <ul className="flex items-center gap-6">
+              <li key={10} className="relative group/main">
+                <Link
+                  to={"/lich-khai-giang"}
+                  className="inline-block py-2 px-3 hover:text-blue-600 transition-colors duration-200">
+                  Lịch khai giảng
+                </Link>
+              </li>
               {menuItems.map((menu) => (
                 <li key={menu.id} className="relative group/main">
                   <Link
-                    to={menu.path}
+                    to={menu.slug}
                     className="inline-block py-2 px-3 hover:text-blue-600 transition-colors duration-200">
                     {menu.title}
                   </Link>

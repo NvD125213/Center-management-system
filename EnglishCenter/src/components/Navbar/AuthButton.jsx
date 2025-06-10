@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLogoutMutation } from "../../services/authServices";
 import { logout } from "../../stores/authSlice";
 import { toast } from "react-hot-toast";
+import Cookies from "js-cookie";
 
 const AuthButton = () => {
   const navigate = useNavigate();
@@ -13,16 +14,12 @@ const AuthButton = () => {
   const user = useSelector((state) => state.auth.user);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
-  const handleLogout = async () => {
-    try {
-      await logoutApi().unwrap();
-      dispatch(logout());
-      toast.success("Đăng xuất thành công!");
-      navigate("/");
-    } catch (error) {
-      toast.error("Đăng xuất thất bại!");
-      console.error("Logout error:", error);
-    }
+  const handleLogout = () => {
+    Cookies.remove("access_token");
+    Cookies.remove("refresh_token");
+    dispatch(logout());
+    toast.success("Đăng xuất thành công!");
+    navigate("/");
   };
 
   if (!isAuthenticated) {
