@@ -8,7 +8,7 @@ export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const newSocket = io("http://localhost:3000"); // Địa chỉ server socket
+    const newSocket = io("http://localhost:4000");
     setSocket(newSocket);
     return () => {
       newSocket.close();

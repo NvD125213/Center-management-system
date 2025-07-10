@@ -16,6 +16,7 @@ import AlertResult from "./components/Exam/AlertResult";
 import BlogDetail from "./pages/BlogDetail";
 import ProtectedRoute from "./routes/protectedRoute";
 import ClassSchedule from "./pages/ListClassActive";
+import DetailExamV2 from "./pages/DetailExam";
 
 const App = () => {
   return (
@@ -59,6 +60,7 @@ const App = () => {
             </Route>
             <Route path="/signin" element={<SignInForm />} />
             <Route path="/signup" element={<SignUpForm />} />
+            <Route path="/test-online-v2/detail" element={<DetailExamV2 />} />
             <Route
               path="/test-online/detail/:part?/:group?/:question?"
               element={

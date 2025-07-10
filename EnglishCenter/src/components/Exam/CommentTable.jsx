@@ -26,9 +26,12 @@ import MenuItem from "@mui/material/MenuItem";
 function getAllNames(comments) {
   const names = new Set();
   function traverse(list) {
+    if (!Array.isArray(list)) return;
     list.forEach((c) => {
-      if (c.user?.full_name) names.add(c.user.full_name);
-      if (c.children && c.children.length > 0) traverse(c.children);
+      if (c?.user?.full_name) names.add(c.user.full_name);
+      if (c?.children && Array.isArray(c.children) && c.children.length > 0) {
+        traverse(c.children);
+      }
     });
   }
   traverse(comments || []);
@@ -87,6 +90,11 @@ const CommentItem = ({
   handleSelectMention,
   handleReplyInput,
 }) => {
+  // Kiểm tra comment có tồn tại không
+  if (!comment) {
+    return null;
+  }
+
   // Chỉ cho phép reply ở cấp 0 (cha)
   const canReply = level === 0;
   return (
@@ -107,11 +115,27 @@ const CommentItem = ({
                 {comment.user?.full_name || "Người dùng ẩn danh"}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                {new Date(comment.create_at).toLocaleString()}
+                {comment.create_at
+                  ? new Date(comment.create_at).toLocaleString()
+                  : "Không xác định"}
               </Typography>
             </Stack>
             {/* Hiển thị nội dung comment, nếu có mention thì tách và làm nổi bật */}
             {(() => {
+              if (!comment.content) {
+                return (
+                  <Typography
+                    sx={{
+                      mt: 0.5,
+                      mb: 1,
+                      fontStyle: "italic",
+                      color: "text.secondary",
+                    }}>
+                    Nội dung đã bị xóa
+                  </Typography>
+                );
+              }
+
               const mentionMatch = comment.content.match(/^@(\S[\S ]*?)\s+/);
               if (mentionMatch) {
                 const mentionName = mentionMatch[1];
@@ -285,7 +309,7 @@ const CommentTable = ({ examId, userId }) => {
   const socket = useSocket();
 
   // Lấy danh sách tên duy nhất từ comments
-  const names = getAllNames(comments);
+  const names = getAllNames(comments || []);
 
   useEffect(() => {
     if (!socket) return;
@@ -443,7 +467,7 @@ const CommentTable = ({ examId, userId }) => {
         <Alert severity="error">Không thể tải bình luận</Alert>
       ) : (
         <List>
-          {comments && comments.length > 0 ? (
+          {Array.isArray(comments) && comments.length > 0 ? (
             comments.map((comment) => (
               <CommentItem
                 key={comment.id}
@@ -468,8 +492,11 @@ const CommentTable = ({ examId, userId }) => {
               />
             ))
           ) : (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-              Chưa có bình luận nào.
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ mt: 2, textAlign: "center" }}>
+              {isLoading ? "Đang tải bình luận..." : "Chưa có bình luận nào."}
             </Typography>
           )}
         </List>
