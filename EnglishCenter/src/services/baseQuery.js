@@ -2,7 +2,7 @@ import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import Cookies from "js-cookie";
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: "http://localhost:4000/api",
+  baseUrl: "https://envidi.io.vn/api",
   credentials: "include", // This is important for cookies
   prepareHeaders: (headers) => {
     // Get the token from cookies

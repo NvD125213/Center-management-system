@@ -1,6 +1,6 @@
 import axios from "axios";
 
 export const axiosClient = axios.create({
-  baseURL: "http://localhost:4000/api",
+  baseURL: "https://envidi.io.vn/api",
   withCredentials: true,
 });
