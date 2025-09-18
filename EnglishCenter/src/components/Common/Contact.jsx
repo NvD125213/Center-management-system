@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import {
   TextField,
@@ -21,6 +21,8 @@ import {
 import { motion } from "framer-motion";
 import { RiCustomerService2Fill } from "react-icons/ri";
 import { useCreateConsultationMutation } from "../../services/consultantServices";
+import { IconButton } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 
 const Contact = ({ classInfo, onClose }) => {
   const [createConsultation] = useCreateConsultationMutation();
@@ -176,6 +178,20 @@ const Contact = ({ classInfo, onClose }) => {
                   border: "1px solid rgba(255, 255, 255, 0.2)",
                   boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
                 }}>
+                <Box sx={{ position: "relative" }}>
+                  <IconButton
+                    onClick={onClose}
+                    sx={{
+                      position: "absolute",
+                      top: 8,
+                      right: 8,
+                      color: "#4f46e5",
+                    }}>
+                    <CloseIcon />
+                  </IconButton>
+
+                  {/* Phần còn lại của form */}
+                </Box>
                 <Box sx={{ mb: 6, textAlign: "center" }}>
                   <motion.div
                     initial={{ scale: 0 }}
