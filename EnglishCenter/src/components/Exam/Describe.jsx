@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Container,
@@ -22,6 +22,9 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  CardContent,
+  CardHeader,
+  Card,
   Grid,
 } from "@mui/material";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
@@ -36,7 +39,7 @@ import { useSelector } from "react-redux";
 import { format } from "date-fns";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import ExamHistoryDetail from "./ExamHistoryDetail";
-
+import { Quiz, CheckCircle, EmojiEvents } from "@mui/icons-material";
 import CommentTable from "./CommentTable";
 
 const TOEIC_DEFAULT_DESCRIPTION = `Cấu trúc bài thi TOEIC:
@@ -218,7 +221,7 @@ const DescribeExam = () => {
   const navigate = useNavigate();
   const { examName, examDescription, subjectName, duration } =
     location.state || {};
-  const [examTime, setExamTime] = useState(duration || "");
+  const [examTime, setExamTime] = useState(duration ? Number(duration) : "");
   const [infoModalOpen, setInfoModalOpen] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [historyDetailOpen, setHistoryDetailOpen] = useState(false);
@@ -227,18 +230,28 @@ const DescribeExam = () => {
   const userId = useSelector((state) => state.auth.user?.id);
 
   // Fetch exam history
-  const { data: historyData, isLoading: isHistoryLoading } = useGetHistoryQuery(
+  const {
+    data: historyData,
+    refetch,
+    isFetching,
+  } = useGetHistoryQuery(
     { user_id: userId, exam_id: examId },
     { skip: !userId || !examId }
   );
+  useEffect(() => {
+    refetch();
+  }, [examId, refetch]);
 
+  if (isFetching) {
+    return <CircularProgress />;
+  }
   const handleTimeChange = (event) => {
-    setExamTime(event.target.value);
+    setExamTime(Number(event.target.value)); // Đảm bảo luôn là số
   };
 
   const handleStartExam = () => {
     if (!examTime) {
-      // TODO: Show error message that time must be selected
+      alert("Bạn phải chọn thời gian làm bài!");
       return;
     }
     setConfirmModalOpen(true);
@@ -246,14 +259,14 @@ const DescribeExam = () => {
 
   const handleConfirmStart = () => {
     // Navigate to base path with exam time and examId
-    navigate(`/test-online/detail`, {
+    navigate(`/test-online-v2/detail/${examId}`, {
       state: {
         examId,
-        examTime: Number(examTime),
+        examTime: examTime, // Đã là số
         examName,
         subjectName,
         startTime: new Date().getTime(),
-        selectedDuration: Number(examTime),
+        selectedDuration: examTime,
       },
     });
   };
@@ -434,9 +447,131 @@ const DescribeExam = () => {
                 minWidth: 0,
               },
             }}>
-            <Paper elevation={3} sx={{ p: 4 }}>
-              <CommentTable examId={examId} userId={userId} />
-            </Paper>
+            <Card elevation={3} sx={{ p: 2, borderRadius: 3 }}>
+              {historyData?.exam_history &&
+              historyData.exam_history.length > 0 ? (
+                (() => {
+                  const latest = historyData.exam_history.reduce(
+                    (prev, curr) => {
+                      return new Date(curr.submitted_at) >
+                        new Date(prev.submitted_at)
+                        ? curr
+                        : prev;
+                    }
+                  );
+
+                  return (
+                    <Box>
+                      <CardHeader
+                        title={(() => {
+                          const percent =
+                            (latest.correct_answers / latest.total_questions) *
+                            100;
+                          let message = "";
+                          let color = "info";
+
+                          if (percent < 25) {
+                            message = "Cần cố gắng hơn!";
+                            color = "error";
+                          } else if (percent < 50) {
+                            message = "Khá tốt!";
+                            color = "warning";
+                          } else if (percent < 75) {
+                            message = "Rất tốt!";
+                            color = "success";
+                          } else {
+                            message = "Kết quả tuyệt vời!";
+                            color = "success";
+                          }
+
+                          return (
+                            <Box sx={{ display: "flex" }}>
+                              Kết quả nộp bài
+                              <Typography color={color} mx={1}>
+                                {message} ({percent.toFixed(1)}
+                                %)
+                              </Typography>{" "}
+                            </Box>
+                          );
+                        })()}
+                        subheader={format(
+                          new Date(latest.submitted_at),
+                          "dd/MM/yyyy HH:mm"
+                        )}
+                      />
+                      <Divider />
+
+                      <CardContent>
+                        <Grid container spacing={6} justifyContent="center">
+                          <Grid item xs={12} sm={4}>
+                            <Box textAlign="center">
+                              <Quiz color="primary" sx={{ fontSize: 40 }} />
+                              <Typography variant="h6">
+                                {latest.total_questions}
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary">
+                                Thời gian nộp
+                              </Typography>
+                            </Box>
+                          </Grid>
+
+                          <Grid item xs={12} sm={4}>
+                            <Box textAlign="center">
+                              <CheckCircle
+                                color="success"
+                                sx={{ fontSize: 40 }}
+                              />
+                              <Typography variant="h6">
+                                {latest.correct_answers}
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary">
+                                Số câu đúng
+                              </Typography>
+                            </Box>
+                          </Grid>
+
+                          <Grid item xs={12} sm={4}>
+                            <Box textAlign="center">
+                              <EmojiEvents
+                                color="warning"
+                                sx={{ fontSize: 40 }}
+                              />
+                              <Typography variant="h6">
+                                {latest.total_score}
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary">
+                                Điểm số
+                              </Typography>
+                            </Box>
+                          </Grid>
+                        </Grid>
+
+                        {/* Nếu vẫn muốn render bảng chi tiết */}
+                        <Box mt={3}>
+                          <CommentTable
+                            examId={examId}
+                            userId={userId}
+                            history={latest}
+                          />
+                        </Box>
+                      </CardContent>
+                    </Box>
+                  );
+                })()
+              ) : (
+                <CardContent>
+                  <Typography variant="body2">
+                    Chưa có kết quả thi nào.
+                  </Typography>
+                </CardContent>
+              )}
+            </Card>
           </Box>
         </Box>
       </Container>

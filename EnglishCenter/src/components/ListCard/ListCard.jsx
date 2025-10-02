@@ -141,8 +141,6 @@ const ListCard = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  console.log(">>> recentBlogData", recentBlogData);
-
   return (
     <>
       <Hero title="Danh sách bài viết" breadcrumbPaths={breadcrumbPaths} />

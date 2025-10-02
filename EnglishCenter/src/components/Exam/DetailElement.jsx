@@ -26,7 +26,7 @@ const DetailElement = ({ elements }) => {
 
     // Nếu URL bắt đầu bằng /uploads/, thêm base URL
     if (url && url.startsWith("/uploads/")) {
-      return `https://envidi.io.vn${url}`;
+      return `http://localhost:4000${url}`;
     }
 
     return url;

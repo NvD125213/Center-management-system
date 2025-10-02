@@ -17,6 +17,7 @@ import BlogDetail from "./pages/BlogDetail";
 import ProtectedRoute from "./routes/protectedRoute";
 import ClassSchedule from "./pages/ListClassActive";
 import DetailExamV2 from "./pages/DetailExam";
+import NotFoundPage from "./pages/NotFound";
 
 const App = () => {
   return (
@@ -60,7 +61,10 @@ const App = () => {
             </Route>
             <Route path="/signin" element={<SignInForm />} />
             <Route path="/signup" element={<SignUpForm />} />
-            <Route path="/test-online-v2/detail" element={<DetailExamV2 />} />
+            <Route
+              path="/test-online-v2/detail/:examId"
+              element={<DetailExamV2 />}
+            />
             <Route
               path="/test-online/detail/:part?/:group?/:question?"
               element={
@@ -70,6 +74,7 @@ const App = () => {
               }>
               <Route index element={<DetailExam />} />
             </Route>
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Router>
       </main>

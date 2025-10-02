@@ -9,9 +9,6 @@ const mockEnglishQuestions = [
         order: 1,
         title: "Part 1 - Incomplete Sentences",
         description: "Choose the best answer to complete the sentence.",
-        create_at: "2025-05-30T08:00:00.000Z",
-        update_at: "2025-05-30T08:00:00.000Z",
-        deleted_at: null,
         exam_id: 5,
         questions: [
           {
@@ -24,9 +21,6 @@ const mockEnglishQuestions = [
             global_order: 1,
             correct_option: "A",
             isHide: "true",
-            create_at: "2025-05-30T08:00:00.000Z",
-            update_at: "2025-05-30T08:00:00.000Z",
-            deleted_at: null,
             option: {
               A: "rains",
               B: "rained",
@@ -48,16 +42,13 @@ const mockEnglishQuestions = [
           {
             id: 1002,
             group_id: 101,
-            title: "If it __________ tomorrow, we will cancel the heevdsvsd.",
+            title: "If it __________ tomorrow, we will cancel the test.",
             description: "",
             score: 1,
             order: 2,
             global_order: 2,
             correct_option: "A",
             isHide: "true",
-            create_at: "2025-05-30T08:00:00.000Z",
-            update_at: "2025-05-30T08:00:00.000Z",
-            deleted_at: null,
             option: {
               A: "rains",
               B: "rained",
@@ -86,9 +77,6 @@ const mockEnglishQuestions = [
         order: 2,
         title: "Part 1 - Incomplete Sentences",
         description: "Choose the best answer to complete the sentence.",
-        create_at: "2025-05-30T08:00:00.000Z",
-        update_at: "2025-05-30T08:00:00.000Z",
-        deleted_at: null,
         exam_id: 5,
         questions: [
           {
@@ -101,9 +89,6 @@ const mockEnglishQuestions = [
             global_order: 3,
             isHide: "true",
             correct_option: "A",
-            create_at: "2025-05-30T08:00:00.000Z",
-            update_at: "2025-05-30T08:00:00.000Z",
-            deleted_at: null,
             option: {
               A: "rains",
               B: "rained",
@@ -124,9 +109,6 @@ const mockEnglishQuestions = [
             order: 2,
             global_order: 4,
             correct_option: "A",
-            create_at: "2025-05-30T08:00:00.000Z",
-            update_at: "2025-05-30T08:00:00.000Z",
-            deleted_at: null,
             option: {
               A: "rains",
               B: "rained",
@@ -172,9 +154,6 @@ const mockEnglishQuestions = [
         order: 1,
         title: "Part 2 - Incomplete Sentences",
         description: "Choose the best answer to complete the sentence.",
-        create_at: "2025-05-30T08:00:00.000Z",
-        update_at: "2025-05-30T08:00:00.000Z",
-        deleted_at: null,
         exam_id: 5,
         questions: [
           {
@@ -186,9 +165,6 @@ const mockEnglishQuestions = [
             order: 1,
             global_order: 5,
             correct_option: "A",
-            create_at: "2025-05-30T08:00:00.000Z",
-            update_at: "2025-05-30T08:00:00.000Z",
-            deleted_at: null,
             option: {
               A: "rains",
               B: "rained",
@@ -208,9 +184,6 @@ const mockEnglishQuestions = [
             order: 2,
             global_order: 6,
             correct_option: "A",
-            create_at: "2025-05-30T08:00:00.000Z",
-            update_at: "2025-05-30T08:00:00.000Z",
-            deleted_at: null,
             option: {
               A: "rains",
               B: "rained",
@@ -247,9 +220,6 @@ const mockEnglishQuestions = [
         order: 2,
         title: "Part 2 - Incomplete Sentences",
         description: "Choose the best answer to complete the sentence.",
-        create_at: "2025-05-30T08:00:00.000Z",
-        update_at: "2025-05-30T08:00:00.000Z",
-        deleted_at: null,
         exam_id: 5,
         elements: [],
 
@@ -263,9 +233,6 @@ const mockEnglishQuestions = [
             order: 1,
             global_order: 7,
             correct_option: "A",
-            create_at: "2025-05-30T08:00:00.000Z",
-            update_at: "2025-05-30T08:00:00.000Z",
-            deleted_at: null,
             option: {
               A: "rains",
               B: "rained",
@@ -285,9 +252,6 @@ const mockEnglishQuestions = [
             order: 2,
             global_order: 8,
             correct_option: "A",
-            create_at: "2025-05-30T08:00:00.000Z",
-            update_at: "2025-05-30T08:00:00.000Z",
-            deleted_at: null,
             option: {
               A: "rains",
               B: "rained",
@@ -306,9 +270,6 @@ const mockEnglishQuestions = [
         order: 1,
         title: "Part 3 - Incomplete Sentences",
         description: "Choose the best answer to complete the sentence.",
-        create_at: "2025-05-30T08:00:00.000Z",
-        update_at: "2025-05-30T08:00:00.000Z",
-        deleted_at: null,
         exam_id: 5,
         questions: [
           {
@@ -320,9 +281,6 @@ const mockEnglishQuestions = [
             order: 1,
             global_order: 9,
             correct_option: "A",
-            create_at: "2025-05-30T08:00:00.000Z",
-            update_at: "2025-05-30T08:00:00.000Z",
-            deleted_at: null,
             option: {
               A: "rains",
               B: "rained",
@@ -342,9 +300,6 @@ const mockEnglishQuestions = [
             order: 2,
             global_order: 10,
             correct_option: "A",
-            create_at: "2025-05-30T08:00:00.000Z",
-            update_at: "2025-05-30T08:00:00.000Z",
-            deleted_at: null,
             option: {
               A: "rains",
               B: "rained",
